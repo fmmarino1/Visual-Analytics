@@ -1,0 +1,175 @@
+---
+title: 'Homework 1'
+author: "Frank Marino"
+date: '2026-01-16'
+output:
+  html_document:
+    theme: readable
+---
+
+
+```{r, echo = FALSE}
+# clear environment
+rm(list = ls())
+```
+
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+require(dplyr)
+require(ggplot2)
+```
+
+## Exercise 1
+The state of Arizona records the number of automobile deaths two years ago in each of the state's 14 counties:
+
+-   30, 15, 183, 9, 7, 39, 28, 30, 76, 13, 21, 18, 323, 3
+
+### (a)
+
+Using R, enter these data into a variable called `autodths`.
+
+```{r}
+# Type your code here
+autodths <- data.frame(
+  county = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
+  county_death = c(30, 15, 183, 9, 7, 39, 28, 30, 76, 13, 21, 18, 323, 3)
+)
+```
+
+
+### (b)
+
+What is the mean number of deaths per county?
+```{r}
+# Type your code here
+mean_death <- mean(autodths$county_death)
+```
+The mean number of deaths per county is `r round(mean_death, 1)`.
+
+
+### (c)
+
+What is the median number of deaths per county?
+```{r}
+# Type your code here
+median_death <- median(autodths$county_death)
+```
+The median number of deaths per county is `r round(median_death, 2)`.
+
+
+
+
+```{r}
+colors <- ifelse(autodths$county_death == max(autodths$county_death), 
+                 "red",
+                 ifelse(autodths$county_death == min(autodths$county_death),
+                        "green",
+                        "grey"))
+
+chart <- barplot(autodths$county_death,
+        names.arg = autodths$county,
+        xlab = "County",
+        ylab = "Number of Automobile Deaths",
+        main = "Number of Automobile Deaths in Arizona Counties (2024)",
+        col = colors,
+        cex.lab = 1.5
+        )
+abline(h = mean(autodths$county_death),
+                      col = "blue",
+                      lty = 2,
+                      lwd = 2
+                      )
+abline(h = median(autodths$county_death),
+       col = "red",
+       lty = 2,
+       lwd = 2
+       )
+legend("topleft",
+       legend = c(paste("Mean =", round(mean_death, 1)),
+                  paste("Median =", round(median_death, 2))),
+       col = c("blue", "red"),
+       lty = c(2, 2),      # Both dashed
+       lwd = c(2, 2),      # Both width 2
+       bty = "n",          # No box
+       cex = 0.9)
+```
+
+
+
+* * *
+
+## Exercise 2
+In a survey of students several years ago, one question asked for each student's political preference (Democrat (D), Independent (I), or Republican (R)). Here are the 14 responses:
+
+-   D, I, I, D, I, D, I, I, I, D, I, R, D, D
+
+### (a)
+
+Using R, enter these data into a variable called `polpref`.
+
+```{r}
+# Type your code here
+polpref <- data.frame(
+  preference = c("D", "I", "I", "D", "I", "D", "I", "I", "I", "D", "I", "R", "D", "D")
+)
+```
+
+### (b)
+
+Use the `tally()` function to determine the most popular choice of political preference.
+
+```{r}
+# Type your code here
+polpref <- polpref %>%
+  group_by(preference) %>%
+  tally()
+polpref
+```
+
+```{r}
+colors <- ifelse(polpref$preference == "D", "blue", ifelse(polpref$preference == "I", "purple", "red"))
+barplot(polpref$n,
+        names.arg = polpref$preference,
+        xlab = "Political Preference",
+        ylab = "Number of Students",
+        main = "Political Preference Among College Students",
+        col = colors)
+```
+
+
+ 
+> The most popular choice of political preference is Independent. 
+
+* * *
+
+## Exercise 3
+### (a)
+Create a Canva Presentation with two slides:
+
+- Slide 1: Create a data visualization for the data in Exercise 1
+- Slide 2: Create a data visualization for the data in Exercise 2
+
+### (b)
+<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAG-sVwLV2w/6fhNqd-utjrbaLwMPo9-RA/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen" data-external="1">
+  </iframe>
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAG-sVwLV2w&#x2F;6fhNqd-utjrbaLwMPo9-RA&#x2F;view?utm_content=DAG-sVwLV2w&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Automobile Deaths in Arizon Counties (2024)</a> by Frank Marino
+
+
+Embed your Canva Presentation Here: **INSERT IFRAME EMBED CODE. DON'T FORGET to add in `data-external="1"` at the end of your `<iframe>` or else R-Markdown will not display properly.**
+
+### (c)
+Trouble embedding? No worries! Provide your Canva link here as a back-up
+
+URL Link to Canva Site: [Frank Marino - Homework 1](https://www.canva.com/design/DAG-sVwLV2w/6fhNqd-utjrbaLwMPo9-RA/view)
+
+* * *
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
