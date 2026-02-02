@@ -1,0 +1,185 @@
+---
+title: 'Homework 3'
+author: "Frank Marino"
+date: ''
+output:
+  html_document:
+    theme: readable
+---
+
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+```
+
+## Load Data
+The following exercises use the `spotify_songs.csv` data set. This data set is hosted online on github. You should load this data set from github into R using the URL link provided below and call this data `spotify_songs`.
+
+`https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv`
+
+```{r, warning = FALSE, message = FALSE}
+spotify_songs <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv", header=TRUE, stringsAsFactors = FALSE)
+```
+
+* * *
+
+## Exercise 1
+
+### (a)
+Use `favstats()` to find several *descriptive statistics* for `speechiness`, separated by `playlist_genre`. 
+
+```{r}
+speech <- favstats(~ speechiness | playlist_genre, data = spotify_songs)
+speech
+```
+
+
+### (b) 
+Which genre has the highest *average* level of `speechiness`?
+
+```{r}
+speech_high <- which.max(speech$mean)
+speech_highest <- speech$playlist_genre[speech_high]
+```
+
+> The genre that has the *highest average* level of `speechiness` is `r speech_highest`.
+
+
+### (c) 
+Which genre has the lowest *average* level of `speechiness`?
+
+```{r}
+speech_low <- which.min(speech$mean)
+speech_lowest <- speech$playlist_genre[speech_low]
+```
+
+
+> The genre that has the *lowest average* level of `speechiness` is `r speech_lowest`. 
+
+
+```{r}
+colors <- ifelse(speech$mean == max(speech$mean), 
+                 "#1DB954",
+                 ifelse(speech$mean == min(speech$mean),
+                        "black",
+                        "grey"))
+
+ggplot(speech, aes(x = reorder(playlist_genre, mean), y = mean)) +
+  geom_col(fill = colors) +
+  coord_flip() +
+  expand_limits(y = max(speech$mean) * 1.1) + 
+  labs(
+    title = "Speechiness by Playlist Genre",
+    x = "Genre",
+    y = "Average Speechiness"
+  ) +
+  theme_minimal()
+```
+
+
+
+## Exercise 2
+The band *Queen* has the most songs in this particular data set. Let's compare Queen's songs to another artist of your choosing.
+
+Using the code chunk below, filter the `spotify_songs` data set to contain the songs for Queen and your chosen artist.Call this filtered data set `spotify_songs_QueenV[your-artist]`, where you replace `[your-artist]` with the name of the artist (i.e. if I choose Taylor Swift, the name would be `spotify_songs_QueenVTaylorSwift`):
+
+### Filter Data
+*NOTE: Be sure to match exactly the spelling and case sensitivity when selecting categories or your data set might not filter properly!*
+```{r}
+spotify_songs_QueenVBadBunny <- filter(
+  spotify_songs,
+  track_artist %in% c("Queen", "Bad Bunny")) %>%
+  # Filter to remove duplicate songs
+  distinct(track_artist, track_name, .keep_all = TRUE)
+```
+
+Examine the filtered data set by performing R analysis to compare Queen's songs to the Artist you choose by **creating one chart/graph that helps compare the two artists**. 
+
+You **MUST** include a comparison of the two artists by `playlist_genre`.
+ 
+You may provide any other analysis that you think would enhance your visualization or aid users in understanding your data. You may compare your artists using the variables listed below that are available in the data set:
+
+:::: {style="display: flex;"}
+
+::: {}
+- `danceability`
+- `energy`
+- `loudness`
+- `speechiness`
+- `acousticness`
+:::
+
+::: {}
+- `liveness`
+- `valence`
+- `tempo`
+- `duration_ms`
+:::
+
+::::
+  
+Not sure what kind of graph you want to create? Try looking in the [R Data Visualization Cookbook](https://cicerocq.wordpress.com/wp-content/uploads/2020/03/gohil-a.-r-data-visualization-cookbook-.pdf) for some great "recipes" to try out.
+
+### R Analysis
+*Perform all your R analysis here. Use comments to break-out the different elements you are going to include.*
+```{r}
+ggplot(
+  spotify_songs_QueenVBadBunny,
+  aes(
+    x = playlist_genre,
+    y = danceability,
+    color = track_artist
+  )
+) +
+  geom_jitter(
+    position = position_jitterdodge(jitter.width = 0.2),
+    alpha = 1.0
+  ) +
+  scale_color_manual(
+    values = c(
+      "Queen" = "black",
+      "Bad Bunny" = "#1DB954"
+    )
+  ) +
+  labs(
+    title = "Danceability of Songs by Genre: Queen vs Bad Bunny",
+    x = "Playlist Genre",
+    y = "Danceability",
+    color = "Artist"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+* * * 
+
+## Exercise 3
+### (a) 
+Create a Canva Presentation with two slides:
+
+- Slide 1: Create a data visualization for the data in Exercise 1, placing special emphasis on comparing the different playlist genres.
+
+- Slide 2: Create a data visualization for the data in Exercise 2, placing special emphasis on the chart/graph you created to compare Queen's songs to the artist of your choice's songs with an additional focus on `playlist_genre`.
+
+### (b)
+
+<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAHAHNO62lI/kO8KrPSWoSv9c3EoSKreCg/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen" data-external="1">
+  </iframe> 
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAHAHNO62lI&#x2F;kO8KrPSWoSv9c3EoSKreCg&#x2F;view?utm_content=DAHAHNO62lI&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Black and Green Simple Music Production Company Presentation</a> by Frank Marino
+
+### (c)
+Trouble embedding? No worries! Provide your Canva link here as a back-up
+
+URL Link to Canva Site: [Frank Marino - Homework 3](https://www.canva.com/design/DAHAHNO62lI/kO8KrPSWoSv9c3EoSKreCg/view)
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.

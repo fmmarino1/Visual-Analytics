@@ -1,0 +1,340 @@
+---
+title: 'Homework 2'
+author: "Frank Marino"
+date: ''
+output:
+  html_document:
+    theme: readable
+---
+
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+## Load Data
+The following exercises use the `airbnb_boston.csv` data set. Download the .csv file from our Canvas course and load the file into R to complete this assignment. Call this data `airbnb_boston`.
+
+```{r, warning = FALSE, message = FALSE}
+airbnb_boston <- read.csv("airbnb_boston.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+* * *
+
+## Exercise 1
+
+### (a)
+Use `favstats()` to find several *descriptive statistics* for `price` and `minimum_nights`, separated by `neighbourhood`. 
+
+```{r}
+# favstats() for price
+fav_price <- favstats(~ price | neighbourhood, data = airbnb_boston)
+# favstats() for minimum_nights
+fav_min_night <- favstats(~ minimum_nights | neighbourhood, data = airbnb_boston)
+```
+
+
+### (b) 
+Which neighborhood has the highest *average* required `price`?
+```{r}
+high_avg <- which.max(fav_price$mean)
+highest_avg <- fav_price$neighbourhood[high_avg]
+```
+
+
+> The neighbourhood that has the *highest average* required `price` is **`r highest_avg`**.
+
+Which neighborhood has the lowest *average* required `price`?
+
+```{r}
+low_avg <- which.min(fav_price$mean)
+lowest_avg <- fav_price$neighbourhood[low_avg]
+```
+
+
+> The neighbourhood that has the *lowest average* required `price` is **`r lowest_avg`**.
+
+### (c) 
+
+Which neighborhood has the highest *average* required `minimum_nights`?
+
+```{r}
+min_night_avg <- which.max(fav_min_night$mean)
+min_night_neigh <- fav_min_night$neighbourhood[min_night_avg]
+```
+
+> The neighbourhood that has the *highest average* required `minimum_nights` is **`r min_night_neigh`**.
+
+Which neighborhood has the lowest *average* required `minimum_nights`?
+
+```{r}
+min_night_avg_low <- which.min(fav_min_night$mean)
+min_night_neigh_low <- fav_min_night$neighbourhood[min_night_avg_low]
+```
+
+
+> The neighbourhood that has the *lowest average* required `minimum_nights` is **`r min_night_neigh_low`**.
+
+
+```{r}
+colors <- ifelse(fav_price$mean == max(fav_price$mean), 
+                 "brown3",
+                 ifelse(fav_price$mean == min(fav_price$mean),
+                        "darkgreen",
+                        "grey"))
+fav_price <- fav_price %>%
+  mutate(
+    price_level = case_when(
+      mean == max(mean) ~ "Highest average price",
+      mean == min(mean) ~ "Lowest average price",
+      TRUE ~ "Other neighborhoods"
+    )
+  )
+ggplot(fav_price, aes(x = reorder(neighbourhood, mean), y = mean)) +
+  geom_col(fill = colors) +
+  coord_flip() +
+  expand_limits(y = max(fav_price$mean) * 1.1) + 
+  labs(
+    title = "Average Airbnb Price by Neighborhood",
+    x = "Neighborhood",
+    y = "Average Price Per Night (USD)"
+  ) +
+  theme_minimal() +
+   geom_text(
+    data = fav_price %>% 
+      filter(price_level != "Other neighborhoods"),
+    aes(label = paste0("$", round(mean, 0))),
+    hjust = -0.1,
+    size = 3.5
+  )
+```
+
+```{r}
+min_night <- fav_min_night %>%
+  mutate(
+    night_level = case_when(
+      mean == max(mean) ~ "Highest average min nights",
+      mean == min(mean) ~ "Lowest average min nights",
+      TRUE ~ "Other neighborhoods"
+    )
+  )
+
+ggplot(min_night,
+       aes(x = mean, y = reorder(neighbourhood, mean))) +
+  
+  geom_segment(
+    aes(x = 0, xend = mean, yend = neighbourhood),
+    color = "grey70"
+  ) +
+  
+  geom_point(
+    aes(color = night_level),
+    size = 3
+  ) +
+  
+  geom_text(
+    data = min_night %>% 
+      filter(night_level != "Other neighborhoods"),
+    aes(label = round(mean, 1)),
+    hjust = -0.55,
+    size = 5
+  ) +
+  
+  scale_color_manual(
+    values = c(
+      "Highest average min nights" = "brown3",
+      "Lowest average min nights" = "darkgreen",
+      "Other neighborhoods" = "grey60"
+    )
+  ) +
+  
+  expand_limits(x = max(min_night$mean) * 1.05) +
+  
+  labs(
+    title = "Average Minimum Nights Required by Neighborhood",
+    x = "Average Minimum Nights",
+    y = "Neighborhood",
+    color = "Category"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+```
+```{r}
+combined <- bind_rows(
+  fav_price %>%
+    transmute(neighbourhood, value = mean, metric = "Average Price (USD)"),
+  fav_min_night %>%
+    transmute(neighbourhood, value = mean, metric = "Average Minimum Nights")
+)
+ggplot(combined,
+       aes(x = value, y = reorder(neighbourhood, value))) +
+  
+  geom_segment(aes(x = 0, xend = value, yend = neighbourhood),
+               color = "grey70") +
+  geom_point(size = 3, color = "steelblue") +
+  
+  facet_wrap(~ metric, scales = "free_x") +
+  
+  labs(
+    title = "Neighborhood Comparison of Airbnb Pricing and Stay Requirements",
+    x = NULL,
+    y = "Neighborhood"
+  ) +
+  theme_minimal()
+
+```
+
+* * * 
+
+## Exercise 2
+Boston has a lot of great neighborhoods to visit. Let's compare your top three neighborhoods. Using the code chunk below, filter the `airbnb_boston` data set to three of the neighborhoods and call this filtered data set `airbnb_boston_filtered`:
+
+:::: {style="display: flex;"}
+
+::: {}
+- Allston
+- Back Bay
+- Bay Village
+- Beacon Hill
+- Brighton
+- Charlestown
+- Chinatown
+- Dorchester
+- Downtown
+:::
+
+::: {}
+- East Boston
+- Fenway
+- Hyde Park
+- Jamaica Plain
+- Leather District
+- Longwood Medical Area
+- Mattapan
+- Mission Hill
+- North End
+:::
+
+::: {}
+- Roslindale
+- Roxbury
+- South Boston
+- South Boston Waterfront
+- South End
+- West End
+- West Roxbury
+:::
+
+::::
+
+### Filter Data
+*NOTE: Be sure to match exactly the spelling and case sensitivity when selecting categories or your data set might not filter properly!*
+```{r}
+# Type your code here 
+airbnb_boston_filtered <- airbnb_boston %>%
+  filter(neighbourhood %in% c("Beacon Hill", "South Boston Waterfront", "Dorchester"))
+```
+
+Examine the filtered data set by performing R analysis to compare the three neighborhoods by **creating one chart/graph that helps compare your neighborhoods**. 
+ 
+You may provide any other analysis that you think would enhance your visualization or aid users in understanding your data. You may compare your neighborhoods using any of the variables available in the data set:
+
+:::: {style="display: flex;"}
+
+::: {}
+- `price`
+- `reviews_per_month`
+- `accommodates`
+- `bathrooms`
+- `bedrooms`
+:::
+
+::: {}
+- `beds`
+- `property_type`
+- `room_type`
+- `neighbourhood`
+- `minimum_nights`
+:::
+
+::::
+
+Not sure what kind of graph you want to create? Try looking in the [R Data Visualization Cookbook](https://cicerocq.wordpress.com/wp-content/uploads/2020/03/gohil-a.-r-data-visualization-cookbook-.pdf) for some great "recipes" to try out.
+
+### R Analysis
+*Perform all your R analysis here. Use comments to break-out the different elements you are going to include.*
+```{r}
+airbnb_entire <- airbnb_boston_filtered %>%
+  filter(room_type == "Entire home/apt")
+
+ggplot(airbnb_entire,
+       aes(x = neighbourhood, y = accommodates, fill = neighbourhood, )) +
+  geom_violin(trim = FALSE, alpha = 0.6) +
+  geom_boxplot(width = 0.1, outlier.shape = NA, fill = "white", 
+               aes(color = "Median")) +
+stat_summary(fun = mean, geom = "point", size = 3,
+               aes(color = "Mean")) +
+    scale_color_manual(
+    name = "Statistic",
+    values = c("Median" = "black", "Mean" = "black")
+  ) +
+scale_fill_manual(values = c(
+  "Beacon Hill" = "darkgreen",   # soft orange
+  "Dorchester" = "brown1", # soft blue
+  "South Boston Waterfront" = "deepskyblue4" # soft red/pink
+))+ 
+  theme_minimal() +
+  guides(fill = "none") +
+  labs(
+  title = "Distribution of Airbnb Sizes by Neighborhood in Boston",
+  x = "Neighborhood",
+  y = "Accomodation (Number of People)"
+) +
+  theme(
+    legend.position = c(0.65, 0.75),  # adjust x, y (0-1) as needed
+    legend.background = element_rect(fill = alpha("white", 1), color = "black")
+  ) 
+
+
+```
+
+* * * 
+
+## Exercise 3
+### (a) 
+Create a Canva Presentation with two slides:
+
+- Slide 1: Create a data visualization for the data in Exercise 1, placing special emphasis on comparing the different neighborhoods.
+
+- Slide 2: Create a data visualization for the data in Exercise 2, placing special emphasis on the chart/graph you created to compare your three selected neighborhoods.
+
+### (b)
+
+Embed your Canva Presentation Here: 
+<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAG_VyVtuOw/BOl7XzHSWWE8HorTuhtEhw/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen" data-external="1">
+  </iframe>
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAG_VyVtuOw&#x2F;BOl7XzHSWWE8HorTuhtEhw&#x2F;view?utm_content=DAG_VyVtuOw&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Distribution of Airbnb Prices by Neighborhood in Boston</a> by Frank Marino
+
+**INSERT IFRAME EMBED CODE. DON'T FORGET to add in `data-external="1"` at the end of your `<iframe>` or else R-Markdown will not display properly.**
+
+### (c)
+Trouble embedding? No worries! Provide your Canva link here as a back-up
+
+URL Link to Canva Site: [Frank Marino - Homework 2](https://www.canva.com/design/DAG_VyVtuOw/ajhSTAaHIPzJBfCun72pig/edit?utm_content=DAG_VyVtuOw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
