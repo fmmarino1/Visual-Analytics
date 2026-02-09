@@ -1,0 +1,324 @@
+---
+title: | 
+ | Data Visualization Project 1
+ | Infographic
+subtitle: |
+ | Coffee Chain Comparison
+author: | 
+ | Frank Marino
+ | Northeastern University
+ | INSH 5302: Information Design and Visual Analytics
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    code_download: true
+    fig_caption: yes
+    df_print: kable
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: false
+---
+
+# Introduction
+
+Is Starbucks considered 'luxury' coffee?
+
+Coffee brands often carry cultural meanings beyond the drinks they sell. Starbucks is frequently perceived as a more “premium” or “luxury” coffee brand, while Dunkin’ is often praised for its affordability and convince. This project explores whether those perceptions are reflected in the socioeconomic characteristics of the communities where these stores are located.
+
+Using county-level data comparing Starbucks and Dunkin’ locations across 6 counties in Massachusetts, this analysis examines differences in median household income and store distribution. Visualizations including boxplots, bar charts, and summary tables are used to highlight income patterns and cost differences between the two brands. Together, these visuals help tell a data-driven story about how brand identity, geography, and economic context intersect in everyday consumer choices.
+
+## Data
+
+### Load Libraries and Packages
+
+```{r}
+rm(list = ls())
+```
+
+```{r, message=FALSE, warning=FALSE}
+require(moderndive)
+require(dplyr)
+require(tidyselect)
+require(mosaic)
+require(tibble)
+require(sqldf)
+require(tidyr)
+require(ggpubr)
+require(modeest)
+DD_SB <- DD_vs_SB
+```
+
+### Description of data
+
+> R Package: **moderndive**
+
+> Data set: **DD_vs_SB**
+
+> This data set compares the geographic distribution of Dunkin’ and Starbucks locations across 6 Massachusetts counties. It includes county-level demographic variables such as median household income and population, along with the number of stores for each brand. This data set was chosen because it allows for a clear comparison between two well-known coffee brands and supports an exploration of how brand presence relates to local socioeconomic conditions.
+
+### Load and Clean Data
+```{r, message=FALSE, warning=FALSE}
+dd_sb_clean <- DD_SB %>%
+  filter(
+    shops >= 1,
+    !is.na(median_income),
+    !is.na(shop_type)
+  )
+dd_sb_clean <- dd_sb_clean %>%
+  select(-FIPS)
+```
+Counties with missing income values or zero store counts were removed to ensure that all analyses reflected meaningful comparisons between existing Dunkin’ and Starbucks locations.
+
+### Preview Data
+```{r, message=FALSE, warning=FALSE}
+head(dd_sb_clean,10)
+```
+
+### Variables
+```{r, message = FALSE, warning = FALSE}
+names(dd_sb_clean)
+```
+
+The variables featured in this data visualization project are:
+
+1.  **County** - The county in which the store is located.
+2.  **Median_income** - The median household income of the country in which the store is located.
+3.  **Population** - The population of the county in which the store is located.
+4.  **Shop_type** - Whether the store is a Dunkin Donuts or a Starbucks.
+5.  **Shops** - The number of locations for each shop_type in the county.
+
+------------------------------------------------------------------------
+
+# Data Analysis
+## Required Analysis
+### Chart/Graph
+```{r, message = FALSE, warning = FALSE}
+library(ggplot2)
+ggplot(dd_sb_clean, aes(x = shop_type, y = median_income, fill = shop_type)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+  geom_jitter(aes(color = shop_type), width = 0.2, alpha = 0.4) +
+  scale_fill_manual(
+    values = c(
+      "starbucks" = "#006241",
+      "dunkin_donuts" = "#F5821F"
+    ),
+    labels = c(
+      "starbucks" = "Starbucks",
+      "dunkin_donuts" = "Dunkin'"
+    ),
+    name = "Store Type"
+  ) +
+  scale_color_manual(
+    values = c(
+      "starbucks" = "#006241",
+      "dunkin_donuts" = "#F5821F"
+    ),
+    labels = c(
+      "starbucks" = "Starbucks",
+      "dunkin_donuts" = "Dunkin'"
+    ),
+    name = "Store Type"
+  ) +
+  scale_x_discrete(labels = c(
+    "starbucks" = "Starbucks",
+    "dunkin_donuts" = "Dunkin'"
+  )) +
+  labs(
+    title = "Median Income by Store Type",
+    x = "Store Type",
+    y = "Median Income"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+cup_cost <- data.frame(
+  Brand = c("Dunkin'", "Dunkin'", "Starbucks", "Starbucks"),
+  Drink = c("Brewed Coffee", "Brown Sugar Shaken Espresso", "Brewed Coffee", "Brown Sugar Shaken Espresso"),
+  Size = c(14, 24, 16, 16),
+  Cost = c(3.39, 5.83, 3.19, 6.69), # Costs obtained from app ordering
+  CostPerOz = c(0.24, 0.24, 0.20, 0.42) # Calculations
+)
+
+ggplot(cup_cost, aes(x = Drink, y = CostPerOz, fill = Brand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = paste0("$", CostPerOz)), 
+            vjust = -0.5, position = position_dodge(0.9), color = "black") +
+  scale_fill_manual(values = c(
+    "Starbucks" = "#006241",
+    "Dunkin'" = "#F5821F"
+  )) +
+  labs(title = "Cost per oz of Dunkin' vs Starbucks Drinks",
+       y = "Cost per oz ($)", x = "Drink") +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    panel.grid = element_blank(),
+    axis.text = element_text(color = "black", size = 15),       
+    axis.title = element_text(color = "black", size = 15),      
+    plot.title = element_text(color = "black", size = 15)        
+  ) #colors changed for export to canva
+
+```
+
+### Summary Statistics
+```{r, message = FALSE, warning = FALSE}
+favstats(~median_income, data =dd_sb_clean)
+median_income_summary <- dd_sb_clean %>%
+  summarise(
+    n = n(),
+    mean = mean(median_income, na.rm = TRUE),
+    median = median(median_income, na.rm = TRUE),
+    mode = mlv(median_income, method = "mfv")[1],  # pick first mode
+    sd = sd(median_income, na.rm = TRUE),
+    range = max(median_income, na.rm = TRUE) - min(median_income, na.rm = TRUE),
+    min = min(median_income, na.rm = TRUE),
+    max = max(median_income, na.rm = TRUE),
+    Q1 = quantile(median_income, 0.25, na.rm = TRUE),
+    Q3 = quantile(median_income, 0.75, na.rm = TRUE)
+  )
+
+
+
+median_income_by_store <- dd_sb_clean %>%
+  group_by(shop_type) %>%
+  summarise(
+    n = n(),
+    mean = mean(median_income, na.rm = TRUE),
+    median = median(median_income, na.rm = TRUE),
+    mode = mlv(median_income, method = "mfv")[1],  # pick first mode
+    sd = sd(median_income, na.rm = TRUE),
+    range = max(median_income, na.rm = TRUE) - min(median_income, na.rm = TRUE),
+    min = min(median_income, na.rm = TRUE),
+    max = max(median_income, na.rm = TRUE),
+    Q1 = quantile(median_income, 0.25, na.rm = TRUE),
+    Q3 = quantile(median_income, 0.75, na.rm = TRUE)
+  ) %>%
+  mutate(shop_type = case_when(
+    shop_type == "dunkin_donuts" ~ "Dunkin'",
+    shop_type == "starbucks" ~ "Starbucks"
+  ))
+  table_plot <- ggtexttable(median_income_by_store,
+                          rows = NULL,
+                          theme = ttheme(
+                            "light", 
+                            base_size = 12,
+                            colnames.style = colnames_style(
+                              fill = "grey90", 
+                              color = "black", 
+                              face = "bold"
+                            ),
+                            tbody.style = tbody_style(
+                              fill = c("#F5821F", "#006241"),  # Dunkin/Starbucks row colors
+                              color = "white"
+                            )
+                          )) # Kind of ugly, maybe won't include
+```
+
+## Additional Analyses
+
+```{r, message = FALSE, warning = FALSE}
+wilcox.test(median_income ~ shop_type, data = dd_sb_clean)
+tapply(dd_sb_clean$median_income, dd_sb_clean$shop_type, median)
+```
+
+A Wilcoxon rank-sum test revealed a statistically significant difference in local median income between Starbucks and Dunkin locations (W = 29,812, p = 0.00012). Starbucks locations were situated in areas with higher median income (median = \$86,250) compared to Dunkin locations (median = \$75,461).
+
+```{r}
+median_df <- dd_sb_clean %>%
+  group_by(shop_type) %>%
+  summarise(MedianIncome = median(median_income, na.rm = TRUE))
+
+# Bar plot with median labels and p-value
+ggplot(median_df, aes(x = shop_type, y = MedianIncome, fill = shop_type)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = paste0("$", format(MedianIncome, big.mark=","))),
+            vjust = -.5, color = "black", size = 5) +
+  annotate("text", x = 1.5, y = max(median_df$MedianIncome) + 5000, 
+           label = "Wilcoxon p = 0.00012", size = 5, color = "black") +
+  scale_fill_manual(
+    values = c(
+      "starbucks" = "#006241",
+      "dunkin_donuts" = "#F5821F"
+    ),
+    labels = c(
+      "starbucks" = "Starbucks",
+      "dunkin_donuts" = "Dunkin'"
+    ),
+    name = "Store Type"
+  ) +
+  scale_x_discrete(labels = c(
+    "starbucks" = "Starbucks",
+    "dunkin_donuts" = "Dunkin'"
+  )) +
+  labs(
+    title = "Median Income by Store Type",
+    x = "",
+    y = "Median Income ($)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black"),
+    plot.title = element_text(color = "black", face = "bold", size = 16),
+    legend.position = "none"
+  )
+# colors were changed to white for canva presentation. 
+```
+
+```{r}
+sum_dunk <- sum(dd_sb_clean$shops[dd_sb_clean$shop_type == "dunkin_donuts"])
+sum_star <- sum(dd_sb_clean$shops[dd_sb_clean$shop_type == "starbucks"])
+```
+
+```{r}
+store_counts <- dd_sb_clean %>%
+  group_by(county, shop_type) %>%
+  summarise(TotalShops = sum(shops, na.rm = TRUE)) %>%
+  pivot_wider(names_from = shop_type, values_from = TotalShops, values_fill = 0) %>%
+  arrange(county)
+
+```
+
+```{r}
+table_plot <- ggtexttable(store_counts, 
+                          rows = NULL,
+                          theme = ttheme("light", base_size = 12))
+table_plot
+```
+
+------------------------------------------------------------------------
+
+# Infographic
+
+<div style="position: relative; width: 100%; height: 0; padding-top: 225.0000%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAHAYc_6Pxo/_9Hdx7aNaCGajV_rWfmu2Q/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen"
+    data-external="1">
+  </iframe>
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAHAYc_6Pxo&#x2F;_9Hdx7aNaCGajV_rWfmu2Q&#x2F;view?utm_content=DAHAYc_6Pxo&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Starbucks</a> by Frank Marino
+
+URL Link to Canva Site: [Frank Marino - Data Viz Project 1](https://www.canva.com/design/DAHAYc_6Pxo/_9Hdx7aNaCGajV_rWfmu2Q/view)
+
+------------------------------------------------------------------------
+
+# References
+
+*Include any references that you might have used to construct your graphic. This may include, but is not limited to citations for: graphics used, coding techniques, data collection, R-Markdown/RStudio documentation, etc. Delete this when complete.*
+
+1.  moderndive: Statistical Inference via Data Science.  
+2.  Dunkin’ and Starbucks mobile ordering applications (pricing data).
+3.  https://www.starbucks.com/responsibility/sourcing/coffee/
+
+------------------------------------------------------------------------
+
+# All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
