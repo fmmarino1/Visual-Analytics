@@ -1,0 +1,158 @@
+---
+title: 'Homework 4'
+author: "Frank Marino"
+date: 'Feb 15 2026'
+output:
+  html_document:
+    theme: readable
+---
+
+> Canva is not used for this assignment. There is also no presentation required for this assignment.
+
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(gapminder)
+library(plotly)
+```
+
+## Exercise 1
+The following exercises use the `gapminder` data set. Run the code chunk below to load the data and packages:
+
+```{r, warning = FALSE, message = FALSE}
+gapminder_data <- gapminder
+```
+
+### (a) 
+Filter on the `gapminder` data to only include three countries of your choosing. 
+```{r, warning = FALSE, message = FALSE}
+gap_filt <- gapminder %>%
+  filter(country %in% c("Greece", "France", "Canada"))
+```
+
+### (b) 
+Create a **scatterplot** that has x as `lifeExp` and y as `gdpPercap` color coded by `country` and size denoted by `pop`. 
+
+```{r}
+g <- ggplot(gap_filt, aes(x = lifeExp, y = gdpPercap, colour = country, size = pop)) +
+  geom_point()
+g
+```
+
+### (c) 
+Create an **interactive** illustration of the graph above showing the change over time. This should be an animated gif that continually loops. 
+
+```{r}
+p <- ggplot(
+  gap_filt,
+  aes(x = lifeExp, y = gdpPercap, colour = country, size = pop)
+) +
+  geom_point(alpha = 0.8) +
+  scale_y_log10() +
+  labs(
+    title = "Life expectancy vs GDP per capita ({frame_time})",
+    x = "Life expectancy",
+    y = "GDP per capita (log scale)",
+    colour = "Country",
+    size = "Population"
+  ) +
+  transition_time(year) +
+  ease_aes("linear")
+
+animate(
+  p,
+  nframes = 36,
+  fps = 8
+)
+
+```
+
+### (d) 
+Create an **interactive** illustration of the graph above showing the change over time that includes a user interface slider that allows the user to adjust the year to their choice. 
+
+```{r}
+ggplotly(g) %>%
+  layout(
+    dragmode = "pan",
+    xaxis = list(
+      range = c(60, 90)  # set whatever range makes sense
+    )
+  ) %>%
+  rangeslider() %>%
+  config(displayModeBar = FALSE)
+```
+
+### (e) 
+
+Provide a brief overview of what your visualization is showing.
+
+> This visualization is showing the comparison of the life expectancy between residents of Greece, France, and Canada. All three have life expectancy ranges between 60 and 90, so the scale bar was adjusted to allow for easier view. Each country is color coded so it is easily detectable on the graph, with the size of the dots correlating with the population size of the country. We can see that, for all three countries, as gdpPerCap increases, so does life expectancy. 
+
+
+* * * 
+
+## Exercise 2
+The following exercises will follow the [Get Started Mapping with Tableau](https://help.tableau.com/current/pro/desktop/en-us/buildexamples_maps.htm) tutorial. You should follow the tutorial to create 3 different graphs in 3 different sheets:
+
+- Sheet 1: Duplicate the graph from Step 8
+
+![Step 8 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted14.png)
+
+
+- Sheet 2: Duplicate the graph from Step 9
+![Step 9 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted20.png)
+
+
+- Sheet 3: Duplicate the graph from Step 10
+![Step 10 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted25.png)
+
+After you finish creating these visualizations in their own sheet, create a Story with three points so you can showcase each sheet in a Tableau Data Story.
+
+### (a)
+After you finished the tutorial above, save your work to Tableau Public and then embed your code below directly into your HTML page. **Be sure to add a lot of blank space as the embed needs space to render this as HTML code.**
+ 
+
+**Copy your Tableau Embed Code Here**
+
+
+
+
+
+
+
+
+
+
+<div class='tableauPlaceholder' id='viz1771202300559' style='position: relative'><noscript><a href='#'><img alt='Get Started Mapping With Tableau: A Tutorial ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ge&#47;GettingStartedWithTableau_17709146057090&#47;Story1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='GettingStartedWithTableau_17709146057090&#47;Story1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ge&#47;GettingStartedWithTableau_17709146057090&#47;Story1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div> 
+
+
+
+
+
+
+
+
+
+From the embed code above take the code between <script> and move it into this code chunk:
+```{js, embedcode, echo = FALSE}
+var divElement = document.getElementById('viz1771202300559');
+var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='1016px';vizElement.style.height='991px';
+var scriptElement = document.createElement('script');
+scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);    
+```
+ 
+
+### (b)
+Trouble embedding? No worries! Provide your Tableau Public Dashboard link here as a back-up:
+
+URL Link to Tableau Dashboard: [Frank Marino - Homework 4](**https://public.tableau.com/views/GettingStartedWithTableau_17709146057090/Story1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link**)
+
+* * * 
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.

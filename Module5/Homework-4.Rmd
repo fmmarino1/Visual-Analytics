@@ -1,0 +1,138 @@
+---
+title: 'Homework 4'
+author: "TYPE YOUR NAME HERE"
+date: ''
+output:
+  html_document:
+    theme: readable
+---
+
+> Canva is not used for this assignment. There is also no presentation required for this assignment.
+
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(gapminder)
+library(plotly)
+```
+
+## Exercise 1
+The following exercises use the `gapminder` data set. Run the code chunk below to load the data and packages:
+
+```{r, warning = FALSE, message = FALSE}
+gapminder_data <- gapminder
+```
+
+### (a) 
+Filter on the `gapminder` data to only include three countries of your choosing. 
+```{r, warning = FALSE, message = FALSE}
+gap_filt <- gapminder %>%
+  filter(country %in% c("Greece", "France", "Canada"))
+```
+
+### (b) 
+Create a **scatterplot** that has x as `lifeExp` and y as `gdpPercap` color coded by `country` and size denoted by `pop`. 
+
+```{r}
+g <- ggplot(gap_filt, aes(x = lifeExp, y = gdpPercap, colour = country, size = pop)) +
+  geom_point()
+g
+```
+
+### (c) 
+Create an **interactive** illustration of the graph above showing the change over time. This should be an animated gif that continually loops. 
+
+```{r}
+p <- ggplot(
+  gap_filt,
+  aes(x = lifeExp, y = gdpPercap, colour = country, size = pop)
+) +
+  geom_point(alpha = 0.8) +
+  scale_y_log10() +
+  labs(
+    title = "Life expectancy vs GDP per capita ({frame_time})",
+    x = "Life expectancy",
+    y = "GDP per capita (log scale)",
+    colour = "Country",
+    size = "Population"
+  ) +
+  transition_time(year) +
+  ease_aes("linear")
+
+animate(
+  p,
+  nframes = length(unique(gap_filt$year)) * 8,
+  fps = 12,
+  width = 800,
+  height = 500
+)
+```
+
+### (d) 
+Create an **interactive** illustration of the graph above showing the change over time that includes a user interface slider that allows the user to adjust the year to their choice. 
+
+```{r}
+ggplotly(g) %>%
+  layout(
+    dragmode = "pan",
+    xaxis = list(
+      range = c(60, 90)  # set whatever range makes sense
+    )
+  ) %>%
+  rangeslider() %>%
+  config(displayModeBar = FALSE)
+```
+
+### (e) 
+
+Provide a brief overview of what your visualization is showing.
+
+> This visualization is showing the comparison of the life expectancy between residents of Greece, France, and Canada. All three have life expectancy ranges between 60 and 90, so the scale bar was adjusted to allow for easier view. Each country is color coded so it is easily detectable on the graph, with the size of the dots correlating with the population size of the country. We can see that, for all three countries, as gdpPerCap increases, so does life expectancy. 
+
+
+* * * 
+
+## Exercise 2
+The following exercises will follow the [Get Started Mapping with Tableau](https://help.tableau.com/current/pro/desktop/en-us/buildexamples_maps.htm) tutorial. You should follow the tutorial to create 3 different graphs in 3 different sheets:
+
+- Sheet 1: Duplicate the graph from Step 8
+
+![Step 8 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted14.png)
+
+
+- Sheet 2: Duplicate the graph from Step 9
+![Step 9 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted20.png)
+
+
+- Sheet 3: Duplicate the graph from Step 10
+![Step 10 Final Product](https://help.tableau.com/current/pro/desktop/en-us/Img/maps_getstarted25.png)
+
+After you finish creating these visualizations in their own sheet, create a Story with three points so you can showcase each sheet in a Tableau Data Story.
+
+### (a)
+After you finished the tutorial above, save your work to Tableau Public and then embed your code below directly into your HTML page. **Be sure to add a lot of blank space as the embed needs space to render this as HTML code.**
+ 
+
+**Copy your Tableau Embed Code Here**
+
+From the embed code above take the code between <script> and move it into this code chunk:
+```{js, embedcode, echo = FALSE}
+
+
+```
+ 
+
+### (b)
+Trouble embedding? No worries! Provide your Tableau Public Dashboard link here as a back-up:
+
+URL Link to Tableau Dashboard: [Your Name - Homework 4](**COPY AND PASTE YOUR TABLEAU DASHBOARD URL HERE**)
+
+* * * 
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
