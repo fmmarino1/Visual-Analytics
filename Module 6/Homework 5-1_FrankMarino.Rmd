@@ -1,0 +1,181 @@
+---
+title: 'Homework 5'
+author: "Frank Marino"
+date: 'Feb 21 2026'
+output:
+  html_document:
+    theme: readable
+---
+
+> Canva is not used for this assignment. For the presentation that goes with this assignment, you can show the graphs you created in your Knitted HTML file and then you can show your Tableau dashboard to discuss your process, challenges, and success with this assignment.
+
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+
+library(sf)
+library(terra)
+library(dplyr)
+library(spData)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(ggplot2) # tidyverse data visualization package
+library(viridis)
+```
+
+## Load Data
+The following exercises will follow the [Making Maps in R](https://r.geocompx.org/adv-map) tutorial. Run the code chunk below to load the data needed:
+
+```{r, warning = FALSE, message = FALSE}
+africa = world |> 
+  filter(continent == "Africa", !is.na(iso_a2)) |> 
+  left_join(worldbank_df, by = "iso_a2") |> 
+  select(name, subregion, gdpPercap, HDI, pop_growth) |> 
+  st_transform("ESRI:102022") |> 
+  st_make_valid() |> 
+  st_collection_extract("POLYGON")
+```
+
+## Exercise 1
+### (a) 
+Create a map showing the geographic distribution of the Human Development Index (`HDI`) across Africa with:
+
+1. Base **graphics** (hint: use `plot()`) , 
+
+```{r, warning = FALSE, message = FALSE}
+plot(
+  africa["HDI"],
+  main = "Human Development Index (HDI) Across Africa",
+  axes = FALSE,
+)
+
+```
+
+2. **tmap** packages (hint: use `tm_shape(africa) + ...`),
+
+```{r, warning = FALSE, message = FALSE}
+tm_shape(africa) +
+  tm_polygons("HDI",
+              style = "cont", 
+              title = "Human Development Index (HDI) Across Africa)",
+              palette = "magma")
+```
+
+3. **ggplot** packages (hint: use `ggplot() + geom_sf(...)`).
+
+```{r, warning = FALSE, message = FALSE}
+ggplot(africa) +
+  geom_sf(aes(fill = HDI), color = "black") +
+  scale_fill_viridis_c(option = "B", na.value = "grey80") +
+  labs(
+    title = "Human Development Index (HDI) Across Africa",
+    fill = "HDI"
+  ) +
+  theme_void()
+```
+
+These maps should **NOT** be interactive.
+
+### (b) 
+Extend the **tmap** created for the previous exercise so the legend has three bins: "High" (`HDI` above 0.7), "Medium" (`HDI` between 0.55 and 0.7) and "Low" (`HDI` below 0.55).
+
+```{r, message = FALSE, warning =FALSE}
+tm_shape(africa) +
+  tm_polygons(
+    "HDI",
+    style = "fixed",
+    breaks = c(0, 0.55, 0.7, 1),
+    labels = c("Low (< 0.55)", 
+               "Medium (0.55-0.7)",
+               "High (> 0.7)"),
+    palette = c("#d73027", "#fee08b", "#1a9850"),
+    title = "HDI Levels"
+  )
+
+```
+
+This map should **NOT** be interactive.
+
+### (c) 
+Represent `africa`'s sub-regions on the map. Change the default color palette and legend title. Next, combine this map and the map created in the previous exercise into a single plot. You should use `tmap_arrange(...)` to combine the plots.
+
+```{r, message = FALSE, warning = FALSE}
+m_hdi <- tm_shape(africa) +
+  tm_polygons(
+    "HDI",
+    style = "fixed",
+    breaks = c(0, 0.55, 0.7, 1),
+    labels = c("Low (< 0.55)", 
+               "Medium (0.55-0.7)",
+               "High (> 0.7)"),
+    palette = c("#d73027", "#fee08b", "#1a9850"),
+    title = "HDI Level" 
+) +
+  tm_layout(frame = FALSE)
+
+m_subregion <- tm_shape(africa) +
+  tm_polygons(
+    "subregion",
+    palette = "Set1",
+    title = "African Sub-Regions",
+  ) +
+  tm_layout(frame = FALSE)
+
+tmap_arrange(m_hdi, m_subregion, ncol=2)
+```
+
+These maps should **NOT** be interactive.
+
+### (d) 
+Create an interactive map of HDI in Africa using **tmap**. Add a legend (if not automatically provided) and a scale bar.
+
+```{r, message = FALSE, warning= FALSE}
+tmap_mode("view")
+
+tm_shape(africa) +
+  tm_polygons(
+    "HDI",
+    style = "cont",
+    palette = "magma",
+    title = "Human Development Index (HDI)"
+  ) +
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_layout(
+    legend.outside = FALSE
+  )
+
+```
+
+This map **should** be interactive.
+
+* * * 
+
+## Exercise 2
+The following exercises will use Tableau to create an interactive dashboards using the `food_data.csv` file.
+
+### (a)
+Create a Tableau Dashboard of the `food_data.csv` using Country as one of your variables. Save this to Tableau Public and then embed your code below directly into your HTML page.
+
+**Copy your Tableau Embed Code Here**
+
+<div class='tableauPlaceholder' id='viz1771722142014' style='position: relative'><noscript><a href='#'><img alt='Dashboard 1 ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Bo&#47;Book1_17717217779910&#47;Dashboard1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='Book1_17717217779910&#47;Dashboard1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Bo&#47;Book1_17717217779910&#47;Dashboard1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                
+
+
+```{js, embedcode, echo = FALSE}
+var divElement = document.getElementById('viz1771722142014');
+var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';
+var scriptElement = document.createElement('script'); 
+scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+```
+
+### (b)
+Trouble embedding? No worries! Provide your Tableau Public Dashboard link here as a back-up:
+
+URL Link to Tableau Dashboard: [Frank Marino- Homework 5](**https://public.tableau.com/views/Book1_17717217779910/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link**)
+
+* * *
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
