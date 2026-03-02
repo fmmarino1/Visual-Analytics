@@ -1,0 +1,237 @@
+---
+title: 'Homework 6'
+author: "Frank Marino"
+date: 'March 1, 2026'
+output:
+  html_document: 
+    code_download: true
+    fig_caption: true
+    df_print: kable
+    theme: lumen
+    toc: true
+    toc_float: true
+    code_folding: null
+    toc_depth: 4
+---
+
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+library(treemap)
+library(devtools)
+install_github("timelyportfolio/d3treeR")
+library(d3treeR)
+library(dplyr)
+```
+
+## Load Data
+The following exercises use the `airbnb_boston.csv` data set. Download the .csv file from our Canvas course and load the file into R to complete this assignment. Call this data `airbnb_boston`. Omit null values and then pare down the data set to only include the columns of `price`, `neighbourhood`, and `property_type`.
+
+This assignment uses the `treemap` and `d3Tree` packages. 
+
+```{r, warning = FALSE, message = FALSE}
+# Load Data into R
+airbnb_boston <- read_csv("airbnb_boston.csv")
+airbnb_boston = airbnb_boston %>%
+  na.omit()
+airbnb_boston = airbnb_boston %>%
+  select(price, neighbourhood, property_type)
+```
+
+## Exercise 1
+In this exercise, you will focus on creating Tree Maps in R/RStudio.
+
+### (a) 
+Using `treemap()`, create a tree map that groups the `airbnb_boston` data by Property Type -> Neighborhood -> Price. This tree map should be static. Save this tree map in a named variable `airbnb_boston_treemap`.
+
+```{r}
+airbnb_boston_treemap <- treemap(
+  airbnb_boston,
+  index = c("property_type", "neighbourhood"),
+  vSize = "price",
+  type = "index",
+  palette = "Set3",
+  title = "Airbnb Boston Treemap"
+)
+```
+
+
+### (b) 
+Using `d3tree()`, convert your static tree map into an interactive tree map.
+
+```{r}
+d3tree(airbnb_boston_treemap, rootname = "Airbnb Boston Interactive Treemap")
+```
+
+* * *
+
+## Exercise 2
+In this exercise, you will focus on creating Tree Maps in Canva.
+
+### (a)
+Using the loaded `airbnb_boston` data, you will filter the data set to include eight neighborhoods. Using the code chunk below, filter the `airbnb_boston` data set to eight of the neighborhoods and call this filtered data set `airbnb_boston_filtered`:
+
+:::: {style="display: flex;"}
+
+::: {}
+- Allston
+- Back Bay
+- Bay Village
+- Beacon Hill
+- Brighton
+- Charlestown
+- Chinatown
+- Dorchester
+- Downtown
+:::
+
+::: {}
+- East Boston
+- Fenway
+- Hyde Park
+- Jamaica Plain
+- Leather District
+- Longwood Medical Area
+- Mattapan
+- Mission Hill
+- North End
+:::
+
+::: {}
+- Roslindale
+- Roxbury
+- South Boston
+- South Boston Waterfront
+- South End
+- West End
+- West Roxbury
+:::
+
+::::
+
+### Filter Data
+*NOTE: Be sure to match exactly the spelling and case sensitivity when selecting categories or your data set might not filter properly!*
+```{r, warning=FALSE}
+keep_neigh <- c(
+  "East Boston", "Back Bay", "South Boston", "North End",
+  "Fenway", "Chinatown", "Beacon Hill", "Downtown"
+)
+
+airbnb_boston_filtered <- airbnb_boston %>%
+  filter(neighbourhood %in% keep_neigh)
+```
+
+###(b)
+You are tasked with creating an interactive tree map using the template found in Canva. Your tree map should be the same variables as Exercise 1: Property Type -> Neighborhood -> Price. 
+1. Create a Canva Presentation with **ONE** slide.
+2. Click on **ELEMENTS** on the left-hand menu.
+3. Scroll down and click on *See all* next to the header for **CHARTS**
+4. Under **INTERACTIVE CHARTS**, click on the second option for **Treemap Chart**.
+
+You may need to perform some analysis in R in order to get the data required to create the tree map. Perform any additional R analysis here:
+
+### R Analysis
+*Perform all your R analysis here. Use comments to break-out the different elements you are going to include.*
+```{r}
+airbnb_boston_summary <- airbnb_boston_filtered %>%
+  group_by(neighbourhood, property_type) %>%
+  summarise(
+    mean_price = mean(price, na.rm = TRUE),
+    n_listings = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(neighbourhood, desc(mean_price))
+
+airbnb_boston_summary
+```
+```{r}
+canva_treemap_data <- airbnb_boston_summary %>%
+  transmute(
+    PropertyType = property_type,
+    Neighbourhood = neighbourhood,
+    Value = mean_price
+  )
+
+write_csv(canva_treemap_data, "canva.csv")
+```
+
+
+```{r}
+airbnb_boston_tableau <- airbnb_boston %>%
+  group_by(neighbourhood, property_type) %>%
+  summarise(
+    mean_price = mean(price, na.rm = TRUE),
+    n_listings = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(neighbourhood, desc(mean_price))
+write_csv(airbnb_boston_tableau, "tableau_data.csv")
+```
+
+
+### (b)
+
+Embed your Canva Presentation Here: 
+
+
+<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAHCiUL2qZs/OGXl1PtabivxWlzgsFeh6Q/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen" data-external="1"> 
+  </iframe>
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAHCiUL2qZs&#x2F;OGXl1PtabivxWlzgsFeh6Q&#x2F;view?utm_content=DAHCiUL2qZs&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Airbnb Boston Interactive Treetop</a> by Frank Marino
+
+
+
+
+
+### (c)
+Trouble embedding? No worries! Provide your Canva link here as a back-up:
+
+URL Link to Canva Site: [Your Name - Homework 6](**COPY AND PASTE YOUR CANVA DESIGN URL HERE**)
+
+* * * 
+
+## Exercise 3
+In this exercise, you will focus on creating Tree Maps in Tableau. The last exercise will use the `airbnb_boston.csv` data set and Tableau. 
+
+### (a)
+You are tasked with creating a Tableau Story that has **ONLY** two points: 
+
+1. Story Point 1: A home page dashboard panel with at least 2 visualizations for potential travelers to *view* **AND** *interact* with to make a decision on where they should stay when they visit Boston.
+
+2. Story Point 2: A **tree map** that uses the identical variables above: property_type,neighborhood, and color coded by price.
+
+
+### (b)
+After you create your Tableau story, save your work to Tableau Public and then embed your code below directly into your HTML page. **Be sure to add a lot of blank space as the embed needs space to render this as HTML code.**
+ 
+ 
+
+**Copy your Tableau Embed Code Here**
+
+<div class='tableauPlaceholder' id='viz1772413934995' style='position: relative'><noscript><a href='#'><img alt='Story 1 ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;as&#47;assign6_17723680114960&#47;Story1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='assign6_17723680114960&#47;Story1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;as&#47;assign6_17723680114960&#47;Story1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>
+
+```{js, embedcode, echo = FALSE}
+var divElement = document.getElementById('viz1772413934995');
+var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';
+var scriptElement = document.createElement('script'); 
+scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+```
+ 
+
+### (c)
+Trouble embedding? No worries! Provide your Tableau Public Dashboard link here as a back-up:
+
+URL Link to Tableau Dashboard: [Frank Marino- Homework 6](**COPY AND PASTE YOUR TABLEAU DASHBOARD URL HERE**)
+
+* * *
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.

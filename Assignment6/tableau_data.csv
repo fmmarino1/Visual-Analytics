@@ -1,0 +1,70 @@
+neighbourhood,property_type,mean_price,n_listings
+Allston,Apartment,122.98863636363636,88
+Allston,Other,112,21
+Allston,House,84.82758620689656,58
+Back Bay,Apartment,235.2836879432624,141
+Back Bay,Other,218.19444444444446,36
+Back Bay,House,150.25,4
+Bay Village,Other,201.57142857142858,7
+Bay Village,Apartment,162.7843137254902,51
+Beacon Hill,Other,239.55555555555554,18
+Beacon Hill,Apartment,189.3804347826087,92
+Beacon Hill,House,122.5,2
+Brighton,Other,105.27083333333333,48
+Brighton,Apartment,103.0576923076923,52
+Brighton,House,102.61904761904762,42
+Charlestown,Other,274.57142857142856,28
+Charlestown,House,272,7
+Charlestown,Apartment,134.93103448275863,29
+Chinatown,Other,260.4,5
+Chinatown,Apartment,160.1153846153846,52
+Chinatown,House,85,1
+Dorchester,Other,185.4516129032258,62
+Dorchester,Apartment,103.66666666666667,195
+Dorchester,House,80.832,125
+Downtown,House,244,1
+Downtown,Other,218.45833333333334,24
+Downtown,Apartment,191.33976833976834,259
+East Boston,Apartment,141.76190476190476,84
+East Boston,Other,125.54054054054055,37
+East Boston,House,105.42424242424242,33
+Fenway,Apartment,246.73228346456693,127
+Fenway,Other,215.32,25
+Fenway,House,155,5
+Hyde Park,House,80.33333333333333,15
+Hyde Park,Apartment,79.23076923076923,13
+Hyde Park,Other,75.2,5
+Jamaica Plain,Other,165.57894736842104,57
+Jamaica Plain,House,163.16176470588235,68
+Jamaica Plain,Apartment,148.86274509803923,102
+Leather District,Other,174.5,2
+Longwood Medical Area,Other,179,1
+Longwood Medical Area,Apartment,135.75,4
+Mattapan,Apartment,102.14285714285714,7
+Mattapan,Other,100.5,4
+Mattapan,House,62.205882352941174,34
+Mission Hill,Other,555,9
+Mission Hill,House,234.22222222222223,9
+Mission Hill,Apartment,194.46666666666667,60
+North End,House,499.3333333333333,3
+North End,Other,191.68421052631578,19
+North End,Apartment,186.65217391304347,46
+Roslindale,Apartment,110.94736842105263,19
+Roslindale,House,97,29
+Roslindale,Other,93.05263157894737,19
+Roxbury,Other,277.22222222222223,54
+Roxbury,House,104.72727272727273,44
+Roxbury,Apartment,98.8130081300813,123
+South Boston,House,242.32,25
+South Boston,Other,198.8904109589041,73
+South Boston,Apartment,148.48275862068965,58
+South Boston Waterfront,Apartment,280.53125,32
+South Boston Waterfront,Other,146.5,2
+South End,Other,199.9,40
+South End,Apartment,163.1851851851852,162
+South End,House,147.14285714285714,7
+West End,Other,314.88235294117646,17
+West End,Apartment,226.3181818181818,44
+West Roxbury,Apartment,144.33333333333334,6
+West Roxbury,House,97.57894736842105,19
+West Roxbury,Other,92.85714285714286,7

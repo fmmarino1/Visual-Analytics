@@ -1,0 +1,25 @@
+PropertyType,Neighbourhood,Value
+Apartment,Back Bay,235.2836879432624
+Other,Back Bay,218.19444444444446
+House,Back Bay,150.25
+Other,Beacon Hill,239.55555555555554
+Apartment,Beacon Hill,189.3804347826087
+House,Beacon Hill,122.5
+Other,Chinatown,260.4
+Apartment,Chinatown,160.1153846153846
+House,Chinatown,85
+House,Downtown,244
+Other,Downtown,218.45833333333334
+Apartment,Downtown,191.33976833976834
+Apartment,East Boston,141.76190476190476
+Other,East Boston,125.54054054054055
+House,East Boston,105.42424242424242
+Apartment,Fenway,246.73228346456693
+Other,Fenway,215.32
+House,Fenway,155
+House,North End,499.3333333333333
+Other,North End,191.68421052631578
+Apartment,North End,186.65217391304347
+House,South Boston,242.32
+Other,South Boston,198.8904109589041
+Apartment,South Boston,148.48275862068965
