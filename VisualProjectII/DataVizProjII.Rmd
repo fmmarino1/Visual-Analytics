@@ -1,0 +1,140 @@
+---
+title: 'Visual Project II'
+author: "Frank Marino"
+date: 'March 1, 2026'
+output:
+  html_document: 
+    code_download: true
+    fig_caption: true
+    df_print: kable
+    theme: lumen
+    toc: true
+    toc_float: true
+    code_folding: null
+    toc_depth: 4
+---
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+library(treemap)
+library(devtools)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(readxl)
+```
+
+
+```{r}
+df <- read_xlsx("Summer_Olympic_medallists_1896-2008.xlsx")
+# Only focusing on sheet 1 -- Using other sheets strictly for checking analysis check. 
+
+# Winter Olympics separated to every 2 years in 1986
+# Filter out figure skating, ice hockey,  -- Winter Olympic Games created in 1924. 
+```
+
+
+### Descriptive Statistics:
+```{r}
+summary(df)
+head(df)
+str(df)
+```
+
+```{r}
+colSums(is.na(df))
+```
+
+
+### Filter Winter Sports:
+The Winter Olympic Games were officially created in 1924, so prior to this, Winter sports, like Ice Hockey and Figure Skating, were included in the overall Olympic Games. I will be filtering out these two sports to focus solely on sports performed during the Summer Olympic Games.
+```{r}
+df.summer <- df %>%
+  filter(!Sport %in% c("Ice Hockey", "Skating"))
+```
+
+### Statistics by Medal:
+#### Gold:
+```{r}
+df.gold <- df.summer %>%
+  filter(Medal == "Gold") %>%
+  group_by(NOC) %>%
+  summarise(Gold_Count = n()) %>%
+  arrange(desc(Gold_Count))
+```
+
+
+#### Silver:
+```{r}
+df.silver <- df.summer %>%
+  filter(Medal == "Silver") %>%
+  group_by(NOC) %>%
+  summarize(Silver_Count = n()) %>%
+  arrange(desc(Silver_Count))
+
+```
+
+#### Bronze:
+```{r}
+df.bronze <- df.summer %>%
+  filter(Medal == "Bronze") %>%
+  group_by(NOC) %>%
+  summarize(Bronze_Count = n()) %>%
+  arrange(desc(Bronze_Count))
+```
+
+
+### Statistics by Athlete:
+```{r}
+df.athlete <- df.summer %>%
+  group_by(Athlete, NOC) %>%
+  summarize(Athlete_Win = n()) %>%
+  arrange(desc(Athlete_Win))
+```
+
+```{r}
+sum(df.summer$Medal == "Gold")
+sum(df.summer$Medal == "Silver")
+sum(df.summer$Medal == "Bronze")
+```
+
+Total Country Wins
+```{r}
+df.county <- df.summer %>%
+  group_by(NOC) %>%
+  summarize(Country_Total = n()) %>%
+  arrange(desc(Country_Total))
+```
+
+
+
+Total Events:
+```{r}
+nrow(df.summer)
+```
+
+
+### Men vs Women
+```{r}
+sum(df.summer$Gender == "Men")
+sum(df.summer$Gender == "Women")
+```
+
+```{r}
+df.women1900 <- df.summer %>%
+  filter(Gender == "Women") %>%
+  filter(Edition == 1900)
+
+nrow(df.women1900)
+
+df.women2008 <- df.summer %>%
+  filter(Edition == 2008, Gender == "Women",)
+
+nrow(df.women2008)
+```
+
+
+
