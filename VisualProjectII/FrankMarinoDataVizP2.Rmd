@@ -1,0 +1,382 @@
+---
+title: | 
+ | Data Visualization Project 2
+ | Tableau Story
+subtitle: |
+ | [Historical Patterns of Summer Olympic Games]
+author: | 
+ | [Frank Marino]
+ | Northeastern University
+ | INSH 5302: Information Design and Visual Analytics
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    code_download: true
+    fig_caption: yes
+    df_print: kable
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: false
+---
+
+
+# Introduction
+
+The goal of this project is to explore how Olympic medal performance and participation have changed over time, with a particular focus on country dominance and the growth of women’s participation in the Summer Olympic Games. Using historical Olympic medal data from 1896 to 2008, this analysis investigates which countries have consistently performed at the highest level, how medal distributions vary across nations, and how participation trends have evolved.
+
+To answer these questions, I used both R and Tableau to analyze and visualize the data. In R, I created several static visualizations to examine medal counts, gender trends, and country-level performance, along with summary statistics to better understand the distribution of medals. In Tableau, I developed an interactive story that highlights key insights, including geographic medal distribution and changes in rankings over time. Together, these visualizations provide a comprehensive view of historical Olympic patterns and reveal how a small number of countries and athletes dominate overall performance.
+
+## Data
+### Load Libraries and Packages
+```{r, message=FALSE, warning=FALSE}
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+library(treemap)
+library(devtools)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(readxl)
+knitr::opts_chunk$set(
+echo = TRUE,
+warning = FALSE,
+message = FALSE
+)
+```
+
+### Description of data
+
+> Topic: Sports
+
+> Data set: Summer Olympics Medalist Dataset
+
+This dataset contains historical records of medal winners from the Summer Olympic Games between 1896 and 2008. It includes information on athletes, countries (NOC), sports, events, medal types, and gender. I chose this dataset because it allows for analysis of long-term trends in Olympic performance, including country dominance, medal distribution, and the growth of women’s participation over time. The dataset is well-suited for both statistical analysis in R and interactive storytelling in Tableau.
+
+### Load and Clean Data
+```{r, message=FALSE, warning=FALSE}
+df <- read_xlsx("Summer_Olympic_medallists_1896-2008.xlsx")
+# Only focusing on sheet 1 -- Using other sheets strictly for checking analysis check. 
+
+# Winter Olympics separated to every 2 years in 1986
+# Filter out figure skating, ice hockey,  -- Winter Olympic Games created in 1924. 
+df.summer <- df %>%
+  filter(!Sport %in% c("Ice Hockey", "Skating")) %>%
+  mutate(NOC = recode(NOC, "URS" = "RUS"))
+
+df.medals <- df.summer %>%
+  distinct(Edition, Event, NOC, Medal, Gender, Sport, Discipline, Event_gender)
+
+colSums(is.na(df.summer))
+
+```
+
+### Preview Data
+```{r, message=FALSE, warning=FALSE}
+head(df.summer,10)
+```
+
+### Variables
+```{r, message = FALSE, warning = FALSE}
+names(df.summer)
+```
+
+The variables featured in this data visualization project are:
+
+1. City - The city in which the Summer Olympics were held.
+2. Edition - The year in which the Summer Olympics were held.
+3. Sport - The overall category of sport.
+4. Discipline - The specific event of a sport.
+5. Athlete - The name of the athlete that won the corresponding medal. 
+6. NOC - Abbreviation of participating country. 
+7. Gender - The gender of the individual participating in the event.
+8. Event - The title of the event in each sport and discipline category.
+9. Event_gender - The gender category for the event.
+10. Medal - The winning medal awarded to the coinciding Athlete. 
+
+* * *
+
+# Data Analysis
+
+## Required Analysis
+
+### Summary Statistics
+```{r, message = FALSE, warning = FALSE}
+df.gold <- df.summer %>%
+  filter(Medal == "Gold") %>%
+  group_by(NOC) %>%
+  summarise(Gold_Count = n(), .groups = "drop") %>%
+  arrange(desc(Gold_Count))
+
+df.country <- df.medals %>%
+  group_by(NOC) %>%
+  summarise(Country_Total = n(), .groups = "drop") %>%
+  arrange(desc(Country_Total))
+
+
+df.athlete <- df.summer %>%
+  group_by(Athlete, NOC, Gender) %>%
+  summarise(Athlete_Win = n(), .groups = "drop") %>%
+  arrange(desc(Athlete_Win))
+
+df.gender_edition <- df.medals %>%
+  group_by(Edition, Gender) %>%
+  summarise(Total = n(), .groups = "drop")
+
+nrow(df.summer)
+
+df.women1900 <- df.medals %>%
+  filter(Gender == "Women", Edition == 1900)
+
+nrow(df.women1900)
+
+df.women2008 <- df.medals %>%
+  filter(Edition == 2008, Gender == "Women")
+
+nrow(df.women2008)
+```
+
+
+```{r message = FALSE, warning = FALSE}
+
+favstats(df.gold$Gold_Count)
+favstats(df.country$Country_Total)
+favstats(df.athlete$Athlete_Win)
+
+
+summary_stats <- df.gold %>%
+summarise(
+  mean_gold = mean(Gold_Count),
+  median_gold = median(Gold_Count),
+  sd_gold = sd(Gold_Count),
+  min_gold = min(Gold_Count),
+  max_gold = max(Gold_Count),
+  q1 = quantile(Gold_Count, 0.25),
+  q3 = quantile(Gold_Count, 0.75),
+  n = n()
+)
+summary_stats
+
+df.medals %>%
+  summarise(num_events = n_distinct(Event))
+```
+
+### Chart/Graph 
+
+```{r}
+ggplot(df.gold %>% top_n(20, Gold_Count),
+       aes(x = reorder(NOC, Gold_Count), y = Gold_Count, fill = Gold_Count)) +
+  geom_col() +
+  coord_flip() +
+scale_fill_gradient(low = "#FFD700", high = "#8B6508") +
+labs(title = "Top 20 Countries by Gold Medals",
+       x = "Country",
+       y = "Gold Medals")
+```
+
+
+```{r}
+# Total medals per edition
+df.medals %>%
+  group_by(Edition) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  ggplot(aes(x = Edition, y = Total)) +
+  geom_line(color = "#EFBF04", linewidth = 1.5) +
+  geom_point(color = "#977547", size = 3) +
+  geom_vline(xintercept = 1900, linetype = "dashed", color = "gray40") +
+  annotate("text", x = 1900, y = 550, label = "Women First Compete",
+           angle = 90, vjust = -0.5, color = "deeppink") +
+  labs(title = "Expansion of the Summer Olympic Games",
+       subtitle = "Total medals awarded per Olympic edition",
+       x = "Olympic Year",
+       y = "Total Medals") +
+  theme_minimal()
+```
+```{r}
+ggplot(df.gender_edition, aes(x = Edition, y = Total, color = Gender)) +
+  geom_line(linewidth = 0.75) +
+  geom_point() +
+  scale_color_manual(values = c("Men" = "blue", "Women" = "deeppink")) +
+  geom_vline(xintercept = 1900, linetype = "dashed", color = "gray40") +
+  annotate("text", x = 1900, y = 370, label = "Women First Compete",
+           angle = 90, vjust = -0.5, color = "deeppink") +
+  labs(title = "Olympic Medals by Gender Over Time",
+       x = "Olympic Year",
+       y = "Total Medals")
+```
+```{r}
+df.country_medals <- df.medals %>%
+  filter(NOC %in% c("USA", "RUS", "GBR", "GER", "FRA")) %>%
+  group_by(NOC, Medal) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  mutate(Medal = factor(Medal, levels = c("Gold", "Silver", "Bronze")))
+
+ggplot(df.country_medals, aes(x = NOC, y = Count, fill = Medal)) +
+  geom_col() +
+  scale_fill_manual(values = c("Gold" = "#EFBF04",
+                               "Silver" = "#758A9c",
+                               "Bronze" = "#977547")) +
+  labs(title = "Medal Breakdown for Top Performing Countries",
+       x = "Country",
+       y = "Medal Count")
+```
+
+
+
+```{r}
+library(plotly)
+
+p <- df.medals %>%
+  group_by(Edition, Sport) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  ggplot(aes(x = Edition, y = Total, color = Sport)) +
+  geom_line() +
+  labs(title = "Sport Popularity Over Time",
+       x = "Edition",
+       y = "Total Medals")
+
+graph <- ggplotly(p)
+graph
+
+htmlwidgets::saveWidget(graph, "index.html", selfcontained = TRUE)
+```
+
+```{r}
+head(df.athlete, 10)
+```
+
+
+```{r}
+library(tidyverse)
+library(gganimate)
+
+# Medal totals by country and edition
+df.country_year <- df.medals %>%
+  group_by(Edition, NOC) %>%
+  summarise(Medals = n(), .groups = "drop")
+
+# Create all country-year combinations so cumulative totals work correctly
+all_years <- sort(unique(df.summer$Edition))
+all_countries <- sort(unique(df.summer$NOC))
+
+df.country_year_full <- expand.grid(
+  Edition = all_years,
+  NOC = all_countries
+) %>%
+  left_join(df.country_year, by = c("Edition", "NOC")) %>%
+  mutate(Medals = replace_na(Medals, 0)) %>%
+  arrange(NOC, Edition) %>%
+  group_by(NOC) %>%
+  mutate(Cumulative_Medals = cumsum(Medals)) %>%
+  ungroup()
+
+# Keep only top 10 countries in each year
+df.top10 <- df.country_year_full %>%
+  group_by(Edition) %>%
+  slice_max(order_by = Cumulative_Medals, n = 10, with_ties = FALSE) %>%
+  ungroup()
+
+# Make country order change within each frame
+df.top10 <- df.top10 %>%
+  group_by(Edition) %>%
+  arrange(Cumulative_Medals) %>%
+  mutate(rank = row_number()) %>%
+  ungroup()
+
+
+df.women_year <- df.medals %>%
+  filter(Gender == "Women") %>%
+  group_by(Edition) %>%
+  summarise(Female_Medals = n(), .groups = "drop")
+model <- lm(Female_Medals ~ Edition, data = df.women_year)
+summary(model)
+coef(model)["Edition"]
+
+
+df.women_participation <- df.summer %>%
+  filter(Gender == "Women") %>%
+  group_by(Edition) %>%
+  summarise(Female_Athletes = n_distinct(Athlete), .groups = "drop")
+
+model_participation <- lm(Female_Athletes ~ Edition, data = df.women_participation)
+
+round(coef(model_participation)["Edition"], 2)
+
+library(grid)
+
+value_1900 <- df.women_participation %>%
+  filter(Edition == 1900) %>%
+  pull(Female_Athletes)
+
+value_2008 <- df.women_participation %>%
+  filter(Edition == 2008) %>%
+  pull(Female_Athletes)
+
+ggplot(df.women_participation, aes(x = Edition, y = Female_Athletes)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE, color = "deeppink") +
+  geom_vline(xintercept = 1900, linetype = "dashed", color = "gray40") +
+  annotate("text", x = 1900, y = 370, label = "Women First Compete",
+           angle = 90, vjust = -0.5, color = "deeppink") +
+
+  geom_segment(aes(x = 2006, xend = 2007.5,
+                   y = value_2008 + 100, yend = value_2008+ 15),
+               arrow = arrow(length = unit(0.3, "cm")),
+               color = "deeppink") +
+
+  annotate("text", x = 2000, y = value_2008 + 150,
+           label = paste(value_2008, "Athletes"),
+           color = "deeppink") +
+
+  geom_segment(aes(x = 1904, xend = 1900.5,
+                   y = value_1900 + 110, yend = value_1900 + 15),
+               arrow = arrow(length = unit(0.3, "cm")),
+               color = "deeppink") +
+
+  annotate("text", x = 1908, y = value_1900 + 150,
+           label = paste(value_1900, "Athletes"),
+           color = "deeppink") +
+
+  labs(title = "Women Participation Rates Across Olympic History",
+       x = "Edition",
+       y = "Number of Women Athletes")
+df.women_participation %>%
+  filter(Edition == 1900)
+```
+
+
+```{r}
+# Animated bar chart race
+writexl::write_xlsx(df.top10, "Top10.xlsx")
+```
+
+
+
+```{r}
+# To excel for tableau
+writexl::write_xlsx(df.summer, "TableauOlympics.xlsx")
+writexl::write_xlsx(df.gold, "CountryMedals.xlsx")
+writexl::write_xlsx(df.country, "TotalCountry.xlsx")
+```
+
+* * *
+
+# Tableau Story
+
+Embed your Tableau Story Here:
+
+<div class='tableauPlaceholder' id='viz1773946146778' style='position: relative'><noscript><a href='#'><img alt='Story 1 ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ol&#47;OlympicMedalDominanceThroughTime&#47;Story1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='OlympicMedalDominanceThroughTime&#47;Story1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ol&#47;OlympicMedalDominanceThroughTime&#47;Story1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                
+
+
+```{js echo = FALSE}
+var divElement = document.getElementById('viz1773946146778');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='1016px';vizElement.style.height='991px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+```
+
+
+
+
+URL Link to Tableau Story Site: [Frank Marino- Data Viz Project 2](**https://public.tableau.com/views/OlympicMedalDominanceThroughTime/Story1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link**)
+
+* * *
+
