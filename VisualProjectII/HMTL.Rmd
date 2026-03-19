@@ -1,0 +1,31 @@
+---
+title: "Sport Popularity Over Time"
+output: html_document
+---
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(plotly)
+library(readxl)
+
+# Load and clean data (same as your main file)
+df <- read_xlsx("Summer_Olympic_medallists_1896-2008.xlsx")
+
+df.summer <- df %>%
+  filter(!Sport %in% c("Ice Hockey", "Skating")) %>%
+  mutate(NOC = recode(NOC, "URS" = "RUS"))
+
+df.medals <- df.summer %>%
+  distinct(Edition, Event, NOC, Medal, Gender, Sport, Discipline, Event_gender)
+
+# Build and render the plot
+p <- df.medals %>%
+  group_by(Edition, Sport) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  ggplot(aes(x = Edition, y = Total, color = Sport)) +
+  geom_line() +
+  labs(title = "Sport Popularity Over Time",
+       x = "Edition",
+       y = "Total Medals")
+
+ggplotly(p)
+```

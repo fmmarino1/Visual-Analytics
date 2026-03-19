@@ -243,8 +243,12 @@ p <- df.medals %>%
        x = "Edition",
        y = "Total Medals")
 
-ggplotly(p)
+graph <- ggplotly(p)
+graph
+
+htmlwidgets::saveWidget(graph, "index.html", selfcontained = FALSE)
 ```
+
 ```{r}
 head(df.athlete, 10)
 ```
