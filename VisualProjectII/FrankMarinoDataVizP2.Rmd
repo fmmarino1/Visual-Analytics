@@ -3,9 +3,9 @@ title: |
  | Data Visualization Project 2
  | Tableau Story
 subtitle: |
- | [Historical Patterns of Summer Olympic Games]
+ | Historical Patterns of Summer Olympic Games
 author: | 
- | [Frank Marino]
+ | Frank Marino
  | Northeastern University
  | INSH 5302: Information Design and Visual Analytics
 date: "`r format(Sys.time(), '%B %d, %Y')`"
