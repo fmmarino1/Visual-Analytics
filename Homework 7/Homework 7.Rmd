@@ -1,0 +1,255 @@
+---
+title: 'Homework 7'
+author: "Frank Marino"
+date: 'March 22, 2026'
+output:
+  html_document:
+    theme: readable
+---
+
+> Canva and Tableau is not used for this assignment. There is also no presentation for this assignment.
+
+## Set-up
+
+> Homework 7 follows a tutorial for mapping spatio-temporal data using the `storms` data from the `dplyr` package. [Click here to access the full tutorial.](https://r-spatial.org/r/2017/08/28/nest.html)
+
+### Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# Load any R Packages you may need
+rm(list = ls())
+library(mosaic)
+library(tidyverse)
+library(dplyr)
+library(sf)
+library(mapview)
+```
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+library(dplyr)
+library(readxl)
+library(kableExtra)
+library(ggplot2)
+library(class)
+library(caret)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r setup, include=FALSE}
+rm(list =)
+
+### Load Data
+
+You'll want to **change the names of the Hurricanes in Line 42** from `Sandy`, `Katrina`, and `Jerry` to 3 other hurricane names. Below is a code chunk you can run to view a list of the summary statistics for wind speed with the names of all the storms in this data set.
+```{r, eval=FALSE, include=FALSE}
+storm_names <- dplyr::storms
+storm_names <- filter(storm_names, !grepl('AL0*', name) & !grepl('Al2*', name))
+storm_names <- storm_names %>%
+  select(wind, status, name)
+favstats(wind ~ name, data = storm_names)
+```
+
+From this list, choose **THREE** Names to edit in the following code chunk in Line 42:
+
+```{r, warning = FALSE, message = FALSE}
+# Load Data
+storms_data <- dplyr::storms
+storms_data <- filter(storms_data, name == "Frances" | name == "Bret" | name == "Hortense")
+storms_data <- filter(storms_data, status == "tropical depression" | status == "tropical storm" | status == "hurricane")
+```
+
+#### DO NOT EDIT THIS CODE CHUNK
+
+```{r, warning = FALSE, message = FALSE, echo=FALSE, include=FALSE}
+# DO NOT EDIT
+#For Exercise 1
+storms_data.sf <- storms_data %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326) 
+class(storms_data.sf)
+
+storms_data.sf <- storms_data.sf %>% 
+  mutate(time = as.POSIXct(paste(paste(year,month,day, sep = "-"), 
+                                 paste(hour, ":00", sep = "")))) %>% 
+  select(-month, -day, -hour)
+
+storms_data.sf %>% select(name, time, geometry)
+
+#Coding by Storm Status
+cls <- storms_data.sf %>% pull(status)
+cls <- factor(cls, levels = unique(cls))
+col = sf.colors(length(levels(cls)))
+
+(storms_data.nest <- storms_data.sf %>% group_by(name, year) %>% nest)
+to_line <- function(tr) st_cast(st_combine(tr), "LINESTRING") %>% .[[1]] 
+(tracks <- storms_data.nest %>% pull(data) %>% map(to_line) %>% st_sfc(crs = 4326))
+(storms_data.tr <- storms_data.nest %>% select(-data) %>% st_sf(geometry = tracks))
+
+#For Exercise 2
+to_lines <- function(tr) { 
+  g = st_geometry(tr)
+  hd = head(g, -1)
+  tl = tail(g, -1)
+  map2(hd, tl, function(x,y) st_combine(st_sfc(x, y, crs = 4326))) %>% 
+    map(function(x) st_cast(x, "LINESTRING"))
+}
+
+trs <- storms_data.nest %>% 
+  pull(data) %>% 
+  map(to_lines) %>% 
+  unlist(recursive = FALSE) %>% 
+  do.call(c, .)
+
+fn = function(x) head(x, -1) %>% as.data.frame %>% select(-geometry)
+storms_data.nest <- storms_data.nest %>% mutate(data = map(data, fn))
+
+storms_data.tr2 <- storms_data.nest %>% unnest %>% st_set_geometry(trs)
+nrow(storms_data.tr2)
+```
+
+* * *
+
+## Exercise 1
+### (a)
+Create a base R plot that maps the tracks of the storms using longitude and latitude, while color coding by **storm status**.
+
+```{r}
+storms.sf <- storms_data %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326) 
+class(storms.sf)
+storms.sf %>% select(name, year, geometry)
+storms.sf <- storms.sf %>% 
+  mutate(time = as.POSIXct(paste(paste(year,month,day, sep = "-"), 
+                                 paste(hour, ":00", sep = "")))) %>% 
+  select(-month, -day, -hour)
+storms.sf %>% select(name, time, geometry)
+status_colors <- c(
+  "hurricane"           = "#D85A30",
+  "tropical storm"      = "#1D9E75",
+  "tropical depression" = "#4488DD"
+)
+
+# Map each point's status to the correct color
+point_colors <- status_colors[as.character(storms.sf$status)]
+
+plot(st_geometry(storms.sf), 
+     cex     = .5, 
+     pch     = 19, 
+     axes    = TRUE, 
+     graticule = TRUE, 
+     col     = point_colors)
+
+legend("topleft", 
+       legend = names(status_colors), 
+       col    = status_colors, 
+       pch    = 19,
+       bty    = "n")
+```
+
+### (b)
+Create a plot using `ggplot()` that maps the tracks of the storms using longitude and latitude, while color coding by **storm name**.
+
+```{r}
+(storms.nest <- storms.sf %>% group_by(name, year) %>% nest)
+to_line <- function(tr) st_cast(st_combine(tr), "LINESTRING") %>% .[[1]] 
+(tracks <- storms.nest %>% pull(data) %>% map(to_line) %>% st_sfc(crs = 4326))
+(storms.tr <- storms.nest %>% select(-data) %>% st_sf(geometry = tracks))
+storms.tr %>% 
+  ggplot(aes(color = name)) + geom_sf() + theme(legend.position="none")
+
+```
+
+### (c)
+Create a plot using `ggplot()` that maps the tracks of the storms using longitude and latitude, while color coding by **year**.
+
+```{r}
+storms.tr %>% ggplot(aes(color = year)) + geom_sf()
+
+```
+
+### (d)
+Create a plot using `mapview()` that maps the tracks of the storms, while color coding by **year**.
+
+```{r}
+library(mapview)
+mapview(storms.tr, zcol = "year", legend = TRUE)
+```
+
+
+* * *
+
+## Exercise 2
+
+### (a)
+Create a plot using `ggplot()` that maps the tracks of the storms using longitude and latitude, while color coding by **wind**.
+
+```{r}
+to_lines <- function(tr) { 
+  g = st_geometry(tr)
+  hd = head(g, -1)
+  tl = tail(g, -1)
+  map2(hd, tl, function(x,y) st_combine(st_sfc(x, y, crs = 4326))) %>% 
+    map(function(x) st_cast(x, "LINESTRING"))
+}
+trs <- storms.nest %>% 
+  pull(data) %>% 
+  map(to_lines) %>% 
+  unlist(recursive = FALSE) %>% 
+  do.call(c, .)
+fn = function(x) head(x, -1) %>% as.data.frame %>% select(-geometry)
+storms.nest <- storms.nest %>% mutate(data = map(data, fn))
+storms.tr2 <- storms.nest %>% unnest %>% st_set_geometry(trs)
+nrow(storms.tr2)
+## [1] 9584
+storms.tr2 %>% ggplot(aes(color = wind)) + geom_sf()
+```
+
+
+### (b)
+Create a plot that maps the tracks of the storms using `mapview()`, while color coding by **wind**.
+
+```{r}
+mapview(storms.tr2, zcol = "wind", legend = TRUE)
+
+```
+
+* * *
+
+## Exercise 3
+
+### (a)
+Now create a new subset to filter on the data to have time greater than January 1, 2010.
+```{r}
+storms.tr3 <- storms.tr2 %>% 
+  filter(time >= as.POSIXct("2010-01-01")) 
+mapview(storms.tr3, zcol = "wind", lwd = 4)
+```
+
+### (b)
+Create a plot using `ggplot()` that maps the tracks of the storms using longitude and latitude, while color coding by **wind**.
+
+```{r}
+plot(storms.tr3["wind"], type = 'p', cex = .2, pch = 16, axes = TRUE,
+     graticule = TRUE)
+plot(storms.tr3["wind"], type = 'l', add = TRUE)
+```
+
+
+### (c)
+Create a plot using `mapview()` that maps the tracks of the storms using, while color coding by **wind**.
+
+```{r}
+mapview(storms.tr3, zcol = "wind", lwd = 4, legend = TRUE) +
+  mapview(st_cast(storms.tr3, "POINT"), zcol = "wind", cex = 4)
+```
+
+* * * 
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
