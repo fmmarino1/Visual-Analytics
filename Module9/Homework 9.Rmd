@@ -1,0 +1,74 @@
+---
+title: 'Homework 9'
+author: "Frank Marino"
+date: ''
+output:
+  html_document:
+    theme: readable
+---
+## Load Libraries
+```{r, warning = FALSE, message = FALSE}
+# No R packages are required for this exercise.
+```
+
+This week you are tasked with making an Interactive Presentation that provides an overview on an animal of your choosing. Students will choose any animal (**except Narwhals**) from [https://factanimal.com/](https://factanimal.com/). 
+
+Students will create a 5 slide Canva Presentation that has the following components:
+
+- Page 1: Landing Page with navigation to the other pages,
+
+- Page 2: Overview,
+
+- Page 3: Habitat,
+
+- Page 4: Two Interesting Facts,
+
+- Page 5: References.
+
+Students are encouraged to use existing templates to expand on their information designs. 
+
+All your information designs should happen in Canva for this exercise. You are not allowed to use R-coding to expand on the data available to you. 
+
+See the solution posted on Canvas for more information.
+
+Students **CANNOT** choose the following animal: **Narwhals**
+
+### Animal Chosen: **Frillback Piegon**
+
+> Link to Animal Webpage on : **[Frillback Pigeon](https://factanimal.com/frillback/)**
+
+* * *
+
+## Exercise 1
+### (a) 
+Create a Canva Presentation with 5 slides and include buttons that are link to all other pages so that users can navigate to each page within your animal website.
+
+### (b)
+
+
+<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+ padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+ border-radius: 8px; will-change: transform;">
+  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+    src="https://www.canva.com/design/DAHGHyYqvlM/aqh5cyBxXWm70MnBw8Z4MQ/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen" 
+    data-external="1">
+  </iframe>
+</div>
+<a href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAHGHyYqvlM&#x2F;aqh5cyBxXWm70MnBw8Z4MQ&#x2F;view?utm_content=DAHGHyYqvlM&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Frillback Pigeon</a> by Frank Marino
+
+
+
+### (c)
+Trouble embedding? No worries! Provide your Canva link here as a back-up
+
+URL Link to Canva Site: [Frank Marino - Homework 9](**https://canva.link/qdxaxugkty66e0f**)
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
+
+* * * 
+
+## All done!
+
+Knit the completed R Markdown file as a HTML document (click the "Knit" button at the top of the script editor window) and upload it to the submission portal on Canvas.
